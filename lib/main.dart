@@ -7,17 +7,8 @@ class ToDoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'To-Do List',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.cyan,
       ),
       home: TodoList(title: 'To Do List'),
@@ -36,6 +27,8 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
   int _counter = 0;
+  final List<String> _todoList = <String>[];
+  final TextEditingController _textFieldController = TextEditingController();
 
   void _incrementCounter() {
     setState(() {
@@ -65,11 +58,6 @@ class _TodoListState extends State<TodoList> {
           children: <Widget>[
             Column(
               children: <Widget>[
-                // Image.asset(
-                //   'assets/todoIcon.png',
-                //   color: Colors.cyan,
-                // ),
-
                 SizedBox(height: 16.0),
                 Text(
                   'My tasks: $_counter',
@@ -77,14 +65,71 @@ class _TodoListState extends State<TodoList> {
                 ),
               ],
             ),
+            Column(
+              children: _getItems(),
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        // onPressed: _incrementCounter,
+        onPressed: () => _displayDialog(context),
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  void _addTodoItem(String title) {
+    // Wrapping it inside a set state will notify
+    // the app that the state has changed
+    setState(() {
+      _todoList.add(title);
+    });
+    _incrementCounter();
+    _textFieldController.clear();
+  }
+
+// Generate a single item widget
+  Future<AlertDialog> _displayDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Add a task to your list'),
+            content: TextField(
+              controller: _textFieldController,
+              decoration: const InputDecoration(hintText: 'Enter task here'),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: const Text('ADD'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _addTodoItem(_textFieldController.text);
+                },
+              ),
+              FlatButton(
+                child: const Text('CANCEL'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+// Generate list of item widgets
+  Widget _buildTodoItem(String title) {
+    return ListTile(title: Text(title));
+  }
+
+  List<Widget> _getItems() {
+    final List<Widget> _todoWidgets = <Widget>[];
+    for (String title in _todoList) {
+      _todoWidgets.add(_buildTodoItem(title));
+    }
+    return _todoWidgets;
   }
 }
