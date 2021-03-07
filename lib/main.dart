@@ -27,6 +27,7 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
   int _counter = 0;
+  bool isChecked = false;
   final List<String> _todoList = <String>[];
   final TextEditingController _textFieldController = TextEditingController();
 
@@ -122,7 +123,16 @@ class _TodoListState extends State<TodoList> {
 
 // Generate list of item widgets
   Widget _buildTodoItem(String title) {
-    return ListTile(title: Text(title));
+    return ListTile(
+        leading: Checkbox(
+          value: isChecked,
+          onChanged: (value) {
+            setState(() {
+              this.isChecked = value;
+            });
+          },
+        ),
+        title: Text(title));
   }
 
   List<Widget> _getItems() {
