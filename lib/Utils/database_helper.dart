@@ -13,6 +13,7 @@ class DatabaseHelper {
   String colTitle = 'title';
   String colDescription = 'description';
   String colDate = 'date';
+  String colStatus = 'status';
 
   DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
 
@@ -45,7 +46,15 @@ class DatabaseHelper {
   void _createDb(Database db, int newVersion) async {
     await db.execute(
         'CREATE TABLE $todoTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colTitle TEXT, '
-        '$colDescription TEXT, $colDate TEXT)');
+        '$colDescription TEXT, $colDate TEXT, $colStatus INTEGER  )');
+    // "CREATE TABLE $todoTable ("
+    // "id INTEGER PRIMARY KEY, "
+    // "title TEXT, "
+    // "description TEXT, "
+    // "date TEXT, "
+    // "status INTEGER "
+    // ")"
+    // );
   }
 
   // Fetch Operation: Get all todo objects from database
@@ -84,6 +93,14 @@ class DatabaseHelper {
     var db = await this.database;
     int result =
         await db.rawDelete('DELETE FROM $todoTable WHERE $colId = $id');
+    return result;
+  }
+
+  // Update Status Operation: update status value and store it in the database
+  Future<int> updateStatus(Todo todo) async {
+    var db = await this.database;
+    var result = await db.update(todoTable, todo.toMap(),
+        where: '$colId = ?', whereArgs: [todo.id]);
     return result;
   }
 

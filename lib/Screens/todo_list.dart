@@ -8,6 +8,7 @@ import 'package:todo/Screens/todo_detail.dart';
 import 'package:sqflite/sqflite.dart';
 
 class TodoList extends StatefulWidget {
+  // final Todo todo;
   TodoList({Key key, this.title}) : super(key: key);
   final String title;
   @override
@@ -18,19 +19,19 @@ class TodoList extends StatefulWidget {
 
 class TodoListState extends State<TodoList> {
   DatabaseHelper databaseHelper = DatabaseHelper();
+  // Todo todo;
   List<Todo> todoList;
   int count = 0;
-
-  int _counter = 0;
-  bool isChecked = false;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  int counter = 0;
+  // void _incrementCounter() {
+  //   setState(() {
+  //     this.counter++;
+  //   });
+  // }
 
   Widget _buildTitle(BuildContext context) {
+    // counter = count;
+
     var horizontalTitleAlignment =
         Platform.isIOS ? CrossAxisAlignment.center : CrossAxisAlignment.center;
 
@@ -65,7 +66,7 @@ class TodoListState extends State<TodoList> {
     return Scaffold(
       appBar: new AppBar(
         title: _buildTitle(context),
-        // leading: Text('$_counter',
+        // leading: Text('$this.counter',
         //     style: TextStyle(
         //       color: Colors.amber,
         //       fontSize: 25,
@@ -76,9 +77,9 @@ class TodoListState extends State<TodoList> {
               margin: EdgeInsets.all(10),
               child: new Center(
                   child: new Row(children: <Widget>[
-                new CircleAvatar(
+                CircleAvatar(
                   radius: 15.0,
-                  child: new Text('$_counter'),
+                  child: new Text('$counter'),
                   backgroundColor: const Color(0xff56c6d0),
                 ),
               ])))
@@ -90,7 +91,7 @@ class TodoListState extends State<TodoList> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           debugPrint('FAB clicked');
-          navigateToDetail(Todo('', '', ''), 'Add Todo');
+          navigateToDetail(Todo('', '', 0, ''), 'Add Todo');
         },
         tooltip: 'Add Todo',
         child: Icon(
@@ -132,7 +133,8 @@ class TodoListState extends State<TodoList> {
                   BoxDecoration(shape: BoxShape.circle, color: Colors.white),
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: isChecked
+                // this.isChecked: this.todoList[position].status,
+                child: (this.todoList[position].status != 0)
                     ? Icon(
                         Icons.check,
                         size: 35.0,
@@ -181,8 +183,11 @@ class TodoListState extends State<TodoList> {
               // this.isChecked = !this.isChecked;
               // Checkbox.isChecked = this.isChecked;
               setState(() {
-                isChecked = !isChecked;
-                isChecked ? _counter = _counter - 1 : _counter += 1;
+                this.todoList[position].status == 0
+                    ? this.todoList[position].status = 1
+                    : this.todoList[position].status = 0;
+
+                _updateStatus(context, todoList[position]);
               });
             },
           ),
@@ -223,9 +228,16 @@ class TodoListState extends State<TodoList> {
   // 			return Icon(Icons.keyboard_arrow_right);
   // 	}
   // }
+  void _updateStatus(BuildContext context, Todo todo) async {
+    var result = await databaseHelper.updateStatus(todo);
+    if (result != 0) {
+      updateListView();
+    }
+  }
 
   void _delete(BuildContext context, Todo todo) async {
     int result = await databaseHelper.deleteTodo(todo.id);
+    counter--;
     if (result != 0) {
       _showSnackBar(context, 'Todo Deleted Successfully');
       updateListView();
@@ -248,6 +260,21 @@ class TodoListState extends State<TodoList> {
     }
   }
 
+  int countChecked(List<Todo> list) {
+    if (list == null || list.isEmpty) {
+      return 0;
+    }
+
+    int occ = 0;
+    for (int i = 0; i < list.length; i++) {
+      if (list[i].status == 1) {
+        occ++;
+      }
+    }
+
+    return occ;
+  }
+
   void updateListView() {
     final Future<Database> dbFuture = databaseHelper.initializeDatabase();
     dbFuture.then((database) {
@@ -257,7 +284,8 @@ class TodoListState extends State<TodoList> {
           // isChecked = false;
           this.todoList = todoList;
           this.count = todoList.length;
-          _counter = this.count;
+          int occ = countChecked(todoList);
+          this.counter = this.count - occ;
         });
       });
     });

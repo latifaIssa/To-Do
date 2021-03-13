@@ -26,6 +26,7 @@ class TodoDetailState extends State<TodoDetail> {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  // TextEditingController statusController = TextEditingController();
 
   TodoDetailState(this.todo, this.appBarTitle);
 
@@ -35,6 +36,7 @@ class TodoDetailState extends State<TodoDetail> {
 
     titleController.text = todo.title;
     descriptionController.text = todo.description;
+    // statusController.text = toString(todo.status);
 
     return WillPopScope(
         onWillPop: () {
@@ -208,6 +210,8 @@ class TodoDetailState extends State<TodoDetail> {
     moveToLastScreen();
 
     todo.date = DateFormat.yMMMd().format(DateTime.now());
+    todo.status = 0;
+    // print(todo);
     int result;
     if (todo.id != null) {
       // Case 1: Update operation
